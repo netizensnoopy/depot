@@ -59,7 +59,8 @@ No terminal required.
 - bsdtar or tar
 - flatpak (for .flatpakref)
 - bubblewrap (optional, for sandboxing)
-- Qt6 (for GUI)
+- git (for GUI setup)
+- Qt6 development tools and headers, including qmake6 (for GUI)
 
 **Installation**
 ---
@@ -77,6 +78,6 @@ For GUI:
 git clone https://github.com/netizensnoopy/depot.git
 cd depot
 bundle install
-./bin/setup-rubyqt6  # Builds Qt6 Ruby bindings
+./bin/setup-rubyqt6  # Fetches and builds Qt6 Ruby bindings
 ./bin/depot-gui
 ```

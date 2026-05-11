@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require "fileutils"
 require "etc"
-require "open3"
+require "fileutils"
 
 ROOT = File.expand_path("..", __dir__)
+RUBYQT6_DIR = File.join(ROOT, "ruby-qt6-main")
+RUBYQT6_REPO = "https://github.com/souk4711/ruby-qt6.git"
+RUBYQT6_REF = "v6.2.0"
 GEMS = %w[rice qtcore qtgui qtwidgets].freeze
 LIB_TARGETS = {
   "rice" => "lib/qt6/rice",
@@ -13,16 +15,70 @@ LIB_TARGETS = {
   "qtgui" => "lib/qt6/qtgui",
   "qtwidgets" => "lib/qt6/qtwidgets"
 }.freeze
-QT_HEADERS = `qmake6 -query QT_INSTALL_HEADERS 2>/dev/null`.strip
-QT_HEADERS = `qmake -query QT_INSTALL_HEADERS 2>/dev/null`.strip if QT_HEADERS.empty?
 
-def run(*cmd, chdir:)
+def run(*cmd, chdir: ROOT, env: {})
   puts "$ #{cmd.join(" ")}"
-  env = { "BUNDLE_GEMFILE" => File.join(ROOT, "Gemfile") }
   system(env, *cmd, chdir:) || abort("Command failed: #{cmd.join(" ")}")
 end
 
-def mark_build_complete(gem_name)
+def command_available?(command)
+  ENV.fetch("PATH", "").split(File::PATH_SEPARATOR).any? { |dir| File.executable?(File.join(dir, command)) }
+end
+
+def rubyqt6_load_path_args
+  GEMS.flat_map { |name| ["-I#{File.join(RUBYQT6_DIR, name, "lib")}"] }
+end
+
+def rubyqt6_ready?
+  system(
+    "ruby",
+    *rubyqt6_load_path_args,
+    "-e",
+    "require 'qt6/qtwidgets'",
+    out: File::NULL,
+    err: File::NULL
+  )
+end
+
+def qt_query(name)
+  qmake = ENV["QMAKE"].to_s.strip
+  qmake = "qmake6" if qmake.empty? && command_available?("qmake6")
+  qmake = "qmake" if qmake.empty? && command_available?("qmake")
+  abort("Could not find qmake6 or qmake. Install Qt6 development tools, then rerun ./bin/setup-rubyqt6.") if qmake.empty?
+
+  value = `#{qmake} -query #{name} 2>/dev/null`.strip
+  abort("Could not query #{name} from #{qmake}. Install Qt6 development headers, then rerun ./bin/setup-rubyqt6.") if value.empty?
+
+  value
+end
+
+def ensure_rubyqt6_source
+  if Dir.exist?(RUBYQT6_DIR)
+    return if File.exist?(File.join(RUBYQT6_DIR, "rice", "rice.gemspec"))
+
+    abort("#{RUBYQT6_DIR} exists, but does not look like ruby-qt6. Remove it and rerun ./bin/setup-rubyqt6.")
+  end
+
+  abort("git is required to fetch RubyQt6. Install git, then rerun ./bin/setup-rubyqt6.") unless command_available?("git")
+
+  run("git", "clone", "--depth", "1", "--branch", RUBYQT6_REF, RUBYQT6_REPO, RUBYQT6_DIR)
+end
+
+def write_gui_gemfile
+  path = File.join(ROOT, ".bundle", "rubyqt6.Gemfile")
+  FileUtils.mkdir_p(File.dirname(path))
+  File.write(
+    path,
+    <<~GEMFILE
+      source "https://rubygems.org/"
+
+      #{GEMS.map { |name| "gem \"ruby-qt6-#{name}\", path: #{File.join(RUBYQT6_DIR, name).inspect}" }.join("\n")}
+    GEMFILE
+  )
+  path
+end
+
+def mark_build_complete(gem_name, gemfile)
   script = <<~RUBY
     require "fileutils"
     spec = Gem::Specification.find_all_by_name("ruby-qt6-#{gem_name}").first
@@ -30,15 +86,14 @@ def mark_build_complete(gem_name)
     FileUtils.mkdir_p(File.dirname(spec.gem_build_complete_path))
     FileUtils.touch(spec.gem_build_complete_path)
   RUBY
-  run("bundle", "exec", "ruby", "-e", script, chdir: ROOT)
+  run("bundle", "exec", "ruby", "-e", script, env: { "BUNDLE_GEMFILE" => gemfile })
 end
 
-def make_args(gem_name)
-  flags = ["-DRUBYQT6_BUILD_#{gem_name.upcase}_LIB"]
-  flags << "-I#{QT_HEADERS}" unless QT_HEADERS.empty?
+def make_args(gem_name, qt_headers)
+  flags = ["-DRUBYQT6_BUILD_#{gem_name.upcase}_LIB", "-I#{qt_headers}"]
   %w[QtCore QtGui QtWidgets].each do |qt_module|
-    flags << "-I#{File.join(QT_HEADERS, qt_module)}" unless QT_HEADERS.empty?
-    version_dir = Dir[File.join(QT_HEADERS, qt_module, "*.*.*")].first
+    flags << "-I#{File.join(qt_headers, qt_module)}"
+    version_dir = Dir[File.join(qt_headers, qt_module, "*.*.*")].first
     next unless version_dir
 
     flags << "-I#{version_dir}"
@@ -47,26 +102,43 @@ def make_args(gem_name)
 
   args = ["cppflags=#{flags.join(" ")}"]
   if gem_name != "rice"
-    rice_so = File.join(ROOT, "ruby-qt6-main", "rice", "lib", "qt6", "rice", "rice.so")
+    rice_so = File.join(RUBYQT6_DIR, "rice", "lib", "qt6", "rice", "rice.so")
     args << "LOCAL_LIBS=#{rice_so}"
   end
   args
 end
 
+ensure_rubyqt6_source
+if rubyqt6_ready?
+  puts "RubyQt6 is already ready. You can run ./bin/depot-gui."
+  exit 0
+end
+
+qt_headers = qt_query("QT_INSTALL_HEADERS")
+qt_query("QT_INSTALL_LIBS")
+gemfile = write_gui_gemfile
+
+run("bundle", "install", env: { "BUNDLE_GEMFILE" => gemfile })
+
 GEMS.each do |gem_name|
-  gem_dir = File.join(ROOT, "ruby-qt6-main", gem_name)
+  gem_dir = File.join(RUBYQT6_DIR, gem_name)
   ext_dir = File.join(gem_dir, "ext", "qt6", gem_name)
   target_dir = File.join(gem_dir, LIB_TARGETS.fetch(gem_name))
+
+  abort("Missing RubyQt6 extension directory: #{ext_dir}") unless Dir.exist?(ext_dir)
+
   FileUtils.rm_f(File.join(ext_dir, "Makefile"))
   FileUtils.rm_f(Dir.glob(File.join(ext_dir, "*.{o,so}")))
-  run("bundle", "exec", "ruby", "extconf.rb", chdir: ext_dir)
-  run("make", "-j#{Etc.nprocessors}", *make_args(gem_name), chdir: ext_dir)
+  run("bundle", "exec", "ruby", "extconf.rb", chdir: ext_dir, env: { "BUNDLE_GEMFILE" => gemfile })
+  run("make", "-j#{Etc.nprocessors}", *make_args(gem_name, qt_headers), chdir: ext_dir)
   FileUtils.mkdir_p(target_dir)
   Dir.glob(File.join(ext_dir, "*.so")).each do |shared_object|
     FileUtils.cp(shared_object, target_dir)
     puts "installed #{File.basename(shared_object)} -> #{target_dir}"
   end
-  mark_build_complete(gem_name)
+  mark_build_complete(gem_name, gemfile)
 end
 
-puts "RubyQt6 native extensions are ready."
+run("ruby", *rubyqt6_load_path_args, "-e", "require 'qt6/qtwidgets'; puts 'RubyQt6 QtWidgets loaded successfully.'")
+
+puts "RubyQt6 is ready. You can now run ./bin/depot-gui."

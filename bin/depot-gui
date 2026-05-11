@@ -9,6 +9,22 @@ rescue LoadError
   nil
 end
 
-require "depot/gui/app"
+root = File.expand_path("..", __dir__)
+rubyqt6_dir = File.join(root, "ruby-qt6-main")
+%w[rice qtcore qtgui qtwidgets].reverse_each do |name|
+  lib = File.join(rubyqt6_dir, name, "lib")
+  $LOAD_PATH.unshift(lib) if Dir.exist?(lib)
+end
+
+begin
+  require "depot/gui/app"
+rescue LoadError => e
+  if e.message.include?("qt6/qtwidgets")
+    warn "RubyQt6 QtWidgets is not available. Run ./bin/setup-rubyqt6 first."
+    exit 1
+  end
+
+  raise
+end
 
 Depot::GUI::App.run

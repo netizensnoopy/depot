@@ -1,1 +1,3 @@
 ruby-qt6-main/
+vendor/bundle/
+.bundle/rubyqt6.Gemfile*
