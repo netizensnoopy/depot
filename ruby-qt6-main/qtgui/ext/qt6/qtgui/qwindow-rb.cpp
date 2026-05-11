@@ -1,0 +1,175 @@
+#include "qwindow-rb.hpp"
+#include <qwindow.h>
+#include <rice/qt6/qenum.hpp>
+
+#include <QAccessible>
+#include <QScreen>
+
+RICE4RUBYQT6_USE_NAMESPACE
+
+Class rb_cQWindow;
+
+void Init_qwindow(Module rb_mQt6QtGui)
+{
+    rb_cQWindow =
+        // RubyQt6::QtGui::QWindow
+        define_qlass_under<QWindow, QObject>(rb_mQt6QtGui, "QWindow")
+            // RubyQt6-Defined Functions
+            .define_singleton_function("_qobject_cast", [](QObject *object) -> const QWindow * { return qobject_cast<QWindow *>(object); })
+            .define_singleton_function("_static_meta_object", []() -> const QMetaObject * { return &QWindow::staticMetaObject; })
+            // Constructor
+            .define_constructor(Constructor<QWindow, QWindow *>(), Arg("parent"))
+            // Inherits QSurface
+            .define_method("supports_open_gl", &QWindow::supportsOpenGL)
+            .define_method("surface_class", &QWindow::surfaceClass)
+            // Public Functions
+            .define_method("accessible_root", &QWindow::accessibleRoot)
+            .define_method("base_size", &QWindow::baseSize)
+            .define_method("content_orientation", &QWindow::contentOrientation)
+            .define_method("create", &QWindow::create)
+            .define_method("cursor", &QWindow::cursor)
+            .define_method("destroy", &QWindow::destroy)
+            .define_method("device_pixel_ratio", &QWindow::devicePixelRatio)
+            .define_method("file_path", &QWindow::filePath)
+            .define_method("flags", &QWindow::flags)
+            .define_method("focus_object", &QWindow::focusObject)
+            .define_method("format", &QWindow::format)
+            .define_method("frame_geometry", &QWindow::frameGeometry)
+            .define_method("frame_margins", &QWindow::frameMargins)
+            .define_method("frame_position", &QWindow::framePosition)
+            .define_method("geometry", &QWindow::geometry)
+            .define_method("height", &QWindow::height)
+            .define_method("icon", &QWindow::icon)
+            .define_method("active?", &QWindow::isActive)
+            .define_method("ancestor_of?", &QWindow::isAncestorOf, Arg("child"), Arg("mode") = static_cast<QWindow::AncestorMode>(QWindow::AncestorMode::IncludeTransients))
+            .define_method("exposed?", &QWindow::isExposed)
+            .define_method("modal?", &QWindow::isModal)
+            .define_method("top_level?", &QWindow::isTopLevel)
+            .define_method("visible?", &QWindow::isVisible)
+            .define_method<QPoint (QWindow::*)(const QPoint &) const>("map_from_global", &QWindow::mapFromGlobal, Arg("pos"))
+            .define_method<QPointF (QWindow::*)(const QPointF &) const>("map_from_global", &QWindow::mapFromGlobal, Arg("pos"))
+            .define_method<QPoint (QWindow::*)(const QPoint &) const>("map_to_global", &QWindow::mapToGlobal, Arg("pos"))
+            .define_method<QPointF (QWindow::*)(const QPointF &) const>("map_to_global", &QWindow::mapToGlobal, Arg("pos"))
+            .define_method("mask", &QWindow::mask)
+            .define_method("maximum_height", &QWindow::maximumHeight)
+            .define_method("maximum_size", &QWindow::maximumSize)
+            .define_method("maximum_width", &QWindow::maximumWidth)
+            .define_method("minimum_height", &QWindow::minimumHeight)
+            .define_method("minimum_size", &QWindow::minimumSize)
+            .define_method("minimum_width", &QWindow::minimumWidth)
+            .define_method("modality", &QWindow::modality)
+            .define_method("opacity", &QWindow::opacity)
+            .define_method("_parent", &QWindow::parent, Arg("mode") = static_cast<QWindow::AncestorMode>(QWindow::AncestorMode::ExcludeTransients))
+            .define_method("position", &QWindow::position)
+            .define_method("report_content_orientation_change", &QWindow::reportContentOrientationChange, Arg("orientation"))
+            .define_method("requested_format", &QWindow::requestedFormat)
+            .define_method<void (QWindow::*)(const QSize &)>("resize", &QWindow::resize, Arg("new_size"))
+            .define_method<void (QWindow::*)(int, int)>("resize", &QWindow::resize, Arg("w"), Arg("h"))
+            .define_method("safe_area_margins", &QWindow::safeAreaMargins)
+            .define_method("screen", &QWindow::screen)
+            .define_method("set_base_size", &QWindow::setBaseSize, Arg("size"))
+            .define_method("set_cursor", &QWindow::setCursor, Arg("cursor"))
+            .define_method("set_file_path", &QWindow::setFilePath, Arg("file_path"))
+            .define_method("set_flag", &QWindow::setFlag, Arg("flag"), Arg("on") = static_cast<bool>(true))
+            .define_method("set_flags", &QWindow::setFlags, Arg("flags"))
+            .define_method("set_format", &QWindow::setFormat, Arg("format"))
+            .define_method("set_frame_position", &QWindow::setFramePosition, Arg("point"))
+            .define_method("set_icon", &QWindow::setIcon, Arg("icon"))
+            .define_method("set_keyboard_grab_enabled", &QWindow::setKeyboardGrabEnabled, Arg("grab"))
+            .define_method("set_mask", &QWindow::setMask, Arg("region"))
+            .define_method("set_maximum_size", &QWindow::setMaximumSize, Arg("size"))
+            .define_method("set_minimum_size", &QWindow::setMinimumSize, Arg("size"))
+            .define_method("set_modality", &QWindow::setModality, Arg("modality"))
+            .define_method("set_mouse_grab_enabled", &QWindow::setMouseGrabEnabled, Arg("grab"))
+            .define_method("set_opacity", &QWindow::setOpacity, Arg("level"))
+            .define_method("set_parent", &QWindow::setParent, Arg("parent"))
+            .define_method<void (QWindow::*)(const QPoint &)>("set_position", &QWindow::setPosition, Arg("pt"))
+            .define_method<void (QWindow::*)(int, int)>("set_position", &QWindow::setPosition, Arg("posx"), Arg("posy"))
+            .define_method("set_screen", &QWindow::setScreen, Arg("screen"))
+            .define_method("set_size_increment", &QWindow::setSizeIncrement, Arg("size"))
+            .define_method("set_surface_type", &QWindow::setSurfaceType, Arg("surface_type"))
+            .define_method("set_transient_parent", &QWindow::setTransientParent, Arg("parent"))
+            .define_method("set_visibility", &QWindow::setVisibility, Arg("v"))
+            .define_method("set_window_state", &QWindow::setWindowState, Arg("state"))
+            .define_method("set_window_states", &QWindow::setWindowStates, Arg("states"))
+            .define_method("size", &QWindow::size)
+            .define_method("size_increment", &QWindow::sizeIncrement)
+            .define_method("surface_type", &QWindow::surfaceType)
+            .define_method("title", &QWindow::title)
+            .define_method("transient_parent", &QWindow::transientParent)
+            .define_method("type", &QWindow::type)
+            .define_method("unset_cursor", &QWindow::unsetCursor)
+            .define_method("visibility", &QWindow::visibility)
+            .define_method("width", &QWindow::width)
+            .define_method("win_id", &QWindow::winId)
+            .define_method("window_state", &QWindow::windowState)
+            .define_method("window_states", &QWindow::windowStates)
+            .define_method("x", &QWindow::x)
+            .define_method("y", &QWindow::y)
+            // Public Slots
+            .define_method("alert", &QWindow::alert, Arg("msec"))
+            .define_method("close", &QWindow::close)
+            .define_method("hide", &QWindow::hide)
+            .define_method("lower", &QWindow::lower)
+            .define_method("_raise", &QWindow::raise)
+            .define_method("request_activate", &QWindow::requestActivate)
+            .define_method("request_update", &QWindow::requestUpdate)
+            .define_method<void (QWindow::*)(const QRect &)>("set_geometry", &QWindow::setGeometry, Arg("rect"))
+            .define_method<void (QWindow::*)(int, int, int, int)>("set_geometry", &QWindow::setGeometry, Arg("posx"), Arg("posy"), Arg("w"), Arg("h"))
+            .define_method("set_height", &QWindow::setHeight, Arg("arg"))
+            .define_method("set_maximum_height", &QWindow::setMaximumHeight, Arg("h"))
+            .define_method("set_maximum_width", &QWindow::setMaximumWidth, Arg("w"))
+            .define_method("set_minimum_height", &QWindow::setMinimumHeight, Arg("h"))
+            .define_method("set_minimum_width", &QWindow::setMinimumWidth, Arg("w"))
+            .define_method("set_title", &QWindow::setTitle, Arg("title"))
+            .define_method("set_visible", &QWindow::setVisible, Arg("visible"))
+            .define_method("set_width", &QWindow::setWidth, Arg("arg"))
+            .define_method("set_x", &QWindow::setX, Arg("arg"))
+            .define_method("set_y", &QWindow::setY, Arg("arg"))
+            .define_method("show", &QWindow::show)
+            .define_method("show_full_screen", &QWindow::showFullScreen)
+            .define_method("show_maximized", &QWindow::showMaximized)
+            .define_method("show_minimized", &QWindow::showMinimized)
+            .define_method("show_normal", &QWindow::showNormal)
+            .define_method("start_system_move", &QWindow::startSystemMove)
+            .define_method("start_system_resize", &QWindow::startSystemResize, Arg("edges"))
+            // Signals
+            // .define_method("active_changed", &QWindow::activeChanged)
+            // .define_method("content_orientation_changed", &QWindow::contentOrientationChanged, Arg("orientation"))
+            // .define_method("focus_object_changed", &QWindow::focusObjectChanged, Arg("object"))
+            // .define_method("height_changed", &QWindow::heightChanged, Arg("arg"))
+            // .define_method("maximum_height_changed", &QWindow::maximumHeightChanged, Arg("arg"))
+            // .define_method("maximum_width_changed", &QWindow::maximumWidthChanged, Arg("arg"))
+            // .define_method("minimum_height_changed", &QWindow::minimumHeightChanged, Arg("arg"))
+            // .define_method("minimum_width_changed", &QWindow::minimumWidthChanged, Arg("arg"))
+            // .define_method("modality_changed", &QWindow::modalityChanged, Arg("modality"))
+            // .define_method("opacity_changed", &QWindow::opacityChanged, Arg("opacity"))
+            // .define_method("safe_area_margins_changed", &QWindow::safeAreaMarginsChanged, Arg("arg"))
+            // .define_method("screen_changed", &QWindow::screenChanged, Arg("screen"))
+            // .define_method("transient_parent_changed", &QWindow::transientParentChanged, Arg("transient_parent"))
+            // .define_method("visibility_changed", &QWindow::visibilityChanged, Arg("visibility"))
+            // .define_method("visible_changed", &QWindow::visibleChanged, Arg("arg"))
+            // .define_method("width_changed", &QWindow::widthChanged, Arg("arg"))
+            // .define_method("window_state_changed", &QWindow::windowStateChanged, Arg("window_state"))
+            // .define_method("window_title_changed", &QWindow::windowTitleChanged, Arg("title"))
+            // .define_method("x_changed", &QWindow::xChanged, Arg("arg"))
+            // .define_method("y_changed", &QWindow::yChanged, Arg("arg"))
+            // Static Public Members
+            .define_singleton_function("from_win_id", &QWindow::fromWinId, Arg("id"));
+
+    Data_Type<QWindow::AncestorMode> rb_cQWindowAncestorMode =
+        // RubyQt6::QtGui::QWindow::AncestorMode
+        define_qenum_under<QWindow::AncestorMode>(rb_cQWindow, "AncestorMode");
+        define_qenum_value_under(rb_cQWindowAncestorMode, "ExcludeTransients", QWindow::AncestorMode::ExcludeTransients);
+        define_qenum_value_under(rb_cQWindowAncestorMode, "IncludeTransients", QWindow::AncestorMode::IncludeTransients);
+
+    Data_Type<QWindow::Visibility> rb_cQWindowVisibility =
+        // RubyQt6::QtGui::QWindow::Visibility
+        define_qenum_under<QWindow::Visibility>(rb_cQWindow, "Visibility");
+        define_qenum_value_under(rb_cQWindowVisibility, "Hidden", QWindow::Visibility::Hidden);
+        define_qenum_value_under(rb_cQWindowVisibility, "AutomaticVisibility", QWindow::Visibility::AutomaticVisibility);
+        define_qenum_value_under(rb_cQWindowVisibility, "Windowed", QWindow::Visibility::Windowed);
+        define_qenum_value_under(rb_cQWindowVisibility, "Minimized", QWindow::Visibility::Minimized);
+        define_qenum_value_under(rb_cQWindowVisibility, "Maximized", QWindow::Visibility::Maximized);
+        define_qenum_value_under(rb_cQWindowVisibility, "FullScreen", QWindow::Visibility::FullScreen);
+}

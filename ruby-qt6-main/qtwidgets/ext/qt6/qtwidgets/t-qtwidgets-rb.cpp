@@ -1,0 +1,40 @@
+#include "t-qtwidgets-rb.hpp"
+#include <rice/qt6/qlist.hpp>
+
+#include <QKeyCombination>
+#include <QTableWidgetSelectionRange>
+#include <QAbstractButton>
+#include <QAction>
+#include <QMdiSubWindow>
+#include <QListWidgetItem>
+#include <QTableWidgetItem>
+#include <QTreeWidgetItem>
+
+RICE4RUBYQT6_USE_NAMESPACE
+
+void Init_t_qtwidgets(Module rb_mQt6T)
+{
+    // QList<QKeyCombination>
+    define_qlist_under<QKeyCombination>(rb_mQt6T);
+
+    // QList<QTableWidgetSelectionRange>
+    define_qlist_under<QTableWidgetSelectionRange>(rb_mQt6T);
+
+    // QList<QAbstractButton *>
+    define_qlist_under<QAbstractButton *>(rb_mQt6T);
+
+    // QList<QMdiSubWindow *>
+    define_qlist_under<QMdiSubWindow *>(rb_mQt6T);
+
+    // QList<QListWidgetItem *>
+    define_qlist_under<QListWidgetItem *>(rb_mQt6T);
+
+    // QList<QTableWidgetItem *>
+    define_qlist_under<QTableWidgetItem *>(rb_mQt6T);
+
+    // QList<QTreeWidgetItem *>
+    define_qlist_under<QTreeWidgetItem *>(rb_mQt6T);
+
+    // QList<QWidget *> -> QWidgetList
+    define_qlist_under<QWidget *>(rb_mQt6T);
+}

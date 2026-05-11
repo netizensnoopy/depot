@@ -1,0 +1,17 @@
+# frozen_string_literal: true
+
+require "qt6/qtcore"
+require "qt6/qtgui"
+require "qt6/qtwidgets"
+
+require "qt6/qtprintsupport/version"
+require "qt6/qtprintsupport/qtprintsupport"
+require_relative "qtprintsupport/qtprintsupportversion"
+
+require_relative "qtprintsupport/qprinter"
+require_relative "qtprintsupport/qprinterinfo"
+
+require_relative "qtprintsupport/qabstractprintdialog"
+require_relative "qtprintsupport/qprintdialog"
+
+RubyQt6.initialize!(RubyQt6::QtPrintSupport)

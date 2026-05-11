@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+source "https://rubygems.org"
+
+%w[
+  rice
+  qtcore qtgui qtwidgets qtdbus qtnetwork qtprintsupport qttest
+  qtqml qtquick qtquickcontrols2 qtquickwidgets
+  qtmultimedia qtmultimediawidgets
+  qtwebenginecore qtwebenginewidgets qtwebview
+  qtuitools
+  qt
+].each do |lib|
+  gem_name = (lib != "qt" ? "ruby-qt6-#{lib}" : "ruby-qt6")
+  gem gem_name, path: "../#{lib}"
+end

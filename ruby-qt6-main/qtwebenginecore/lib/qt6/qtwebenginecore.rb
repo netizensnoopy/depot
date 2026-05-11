@@ -1,0 +1,26 @@
+# frozen_string_literal: true
+
+require "qt6/qtcore"
+require "qt6/qtgui"
+
+require "qt6/qtwebenginecore/version"
+require "qt6/qtwebenginecore/qtwebenginecore"
+require_relative "qtwebenginecore/qtwebenginecoreversion"
+
+require_relative "qtwebenginecore/qwebenginecertificateerror"
+require_relative "qtwebenginecore/qwebenginefullscreenrequest"
+require_relative "qtwebenginecore/qwebenginepermission"
+require_relative "qtwebenginecore/qwebenginesettings"
+
+require_relative "qtwebenginecore/qwebengineclienthints"
+require_relative "qtwebenginecore/qwebenginecookiestore"
+require_relative "qtwebenginecore/qwebenginedownloadrequest"
+require_relative "qtwebenginecore/qwebenginenavigationrequest"
+require_relative "qtwebenginecore/qwebenginenewwindowrequest"
+require_relative "qtwebenginecore/qwebenginenotification"
+require_relative "qtwebenginecore/qwebenginepage"
+require_relative "qtwebenginecore/qwebengineprofile"
+
+require_relative "bando/qwebenginepage"
+
+RubyQt6.initialize!(RubyQt6::QtWebEngineCore)

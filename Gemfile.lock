@@ -1,0 +1,42 @@
+PATH
+  remote: ruby-qt6-main/qtcore
+  specs:
+    ruby-qt6-qtcore (6.2.0)
+      ruby-qt6-rice (= 6.2.0)
+
+PATH
+  remote: ruby-qt6-main/qtgui
+  specs:
+    ruby-qt6-qtgui (6.2.0)
+      ruby-qt6-qtcore (~> 6.2.0)
+      ruby-qt6-rice (= 6.2.0)
+
+PATH
+  remote: ruby-qt6-main/qtwidgets
+  specs:
+    ruby-qt6-qtwidgets (6.2.0)
+      ruby-qt6-qtcore (~> 6.2.0)
+      ruby-qt6-qtgui (~> 6.2.0)
+      ruby-qt6-rice (= 6.2.0)
+
+PATH
+  remote: ruby-qt6-main/rice
+  specs:
+    ruby-qt6-rice (6.2.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+
+PLATFORMS
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  ruby-qt6-qtcore!
+  ruby-qt6-qtgui!
+  ruby-qt6-qtwidgets!
+  ruby-qt6-rice!
+
+BUNDLED WITH
+   2.6.9

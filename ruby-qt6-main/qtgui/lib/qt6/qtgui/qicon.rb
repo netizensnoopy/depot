@@ -1,0 +1,38 @@
+# frozen_string_literal: true
+
+module RubyQt6
+  module QtGui
+    # @see https://doc.qt.io/qt-6/qicon.html
+    class QIcon
+      # @!parse class Mode     ; end
+      # @!parse class State    ; end
+      # @!parse class ThemeIcon; end
+      rubyqt6_declare_enum_under QIcon, QIcon::Mode
+      rubyqt6_declare_enum_under QIcon, QIcon::State
+      rubyqt6_declare_enum_under QIcon, QIcon::ThemeIcon, alias: false
+
+      # @!visibility private
+      alias_method :_initialize, :initialize
+
+      # @!visibility private
+      def self.from_theme(*args)
+        T.args_nth_to_qstr(args, 0)
+        _from_theme(*args)
+      end
+
+      # @return [QIcon]
+      #
+      # @overload initialize
+      #
+      # @overload initialize(file_name)
+      #   @param file_name [String, QString]
+      #
+      # @overload initialize(pixmap)
+      #   @param pixmap [QPixmap]
+      def initialize(*args)
+        T.args_nth_to_qstr(args, 0)
+        _initialize(*args)
+      end
+    end
+  end
+end

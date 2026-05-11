@@ -1,0 +1,58 @@
+# frozen_string_literal: true
+
+module RubyQt6
+  module QtGui
+    # @see https://doc.qt.io/qt-6/qbrush.html
+    class QBrush
+      # @!visibility private
+      alias_method :_initialize, :initialize
+
+      # @return [QBrush]
+      #
+      # @overload initialize
+      #
+      # @overload initialize(bs)
+      #   @param bs [Qt::BrushStyle]
+      #
+      # @overload initialize(color)
+      #   @param color [Qt::GlobalColor]
+      #
+      # @overload initialize(color, bs)
+      #   @param color [Qt::GlobalColor]
+      #   @param bs [Qt::BrushStyle]
+      #
+      # @overload initialize(color, pixmap)
+      #   @param color [Qt::GlobalColor]
+      #   @param pixmap [QPixmap]
+      #
+      # @overload initialize(color)
+      #   @param color [QColor]
+      #
+      # @overload initialize(color, bs)
+      #   @param color [QColor]
+      #   @param bs [Qt::BrushStyle]
+      #
+      # @overload initialize(color, pixmap)
+      #   @param color [QColor]
+      #   @param pixmap [QPixmap]
+      #
+      # @overload initialize(gradient)
+      #   @param gradient [QGradient]
+      #
+      # @overload initialize(image)
+      #   @param image [QImage]
+      #
+      # @overload initialize(pixmap)
+      #   @param image [QPixmap]
+      def initialize(*args)
+        _initialize(*args)
+      end
+
+      # @!visibility private
+      def ==(other)
+        return false unless other.is_a?(self.class)
+        self.class._operator_equal(self, other)
+      end
+    end
+  end
+end

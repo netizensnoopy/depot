@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "fileutils"
+require "etc"
+require "open3"
+
+ROOT = File.expand_path("..", __dir__)
+GEMS = %w[rice qtcore qtgui qtwidgets].freeze
+LIB_TARGETS = {
+  "rice" => "lib/qt6/rice",
+  "qtcore" => "lib/qt6/qtcore",
+  "qtgui" => "lib/qt6/qtgui",
+  "qtwidgets" => "lib/qt6/qtwidgets"
+}.freeze
+QT_HEADERS = `qmake6 -query QT_INSTALL_HEADERS 2>/dev/null`.strip
+QT_HEADERS = `qmake -query QT_INSTALL_HEADERS 2>/dev/null`.strip if QT_HEADERS.empty?
+
+def run(*cmd, chdir:)
+  puts "$ #{cmd.join(" ")}"
+  env = { "BUNDLE_GEMFILE" => File.join(ROOT, "Gemfile") }
+  system(env, *cmd, chdir:) || abort("Command failed: #{cmd.join(" ")}")
+end
+
+def mark_build_complete(gem_name)
+  script = <<~RUBY
+    require "fileutils"
+    spec = Gem::Specification.find_all_by_name("ruby-qt6-#{gem_name}").first
+    abort("Could not find ruby-qt6-#{gem_name} spec") unless spec
+    FileUtils.mkdir_p(File.dirname(spec.gem_build_complete_path))
+    FileUtils.touch(spec.gem_build_complete_path)
+  RUBY
+  run("bundle", "exec", "ruby", "-e", script, chdir: ROOT)
+end
+
+def make_args(gem_name)
+  flags = ["-DRUBYQT6_BUILD_#{gem_name.upcase}_LIB"]
+  flags << "-I#{QT_HEADERS}" unless QT_HEADERS.empty?
+  %w[QtCore QtGui QtWidgets].each do |qt_module|
+    flags << "-I#{File.join(QT_HEADERS, qt_module)}" unless QT_HEADERS.empty?
+    version_dir = Dir[File.join(QT_HEADERS, qt_module, "*.*.*")].first
+    next unless version_dir
+
+    flags << "-I#{version_dir}"
+    flags << "-I#{File.join(version_dir, qt_module)}"
+  end
+
+  args = ["cppflags=#{flags.join(" ")}"]
+  if gem_name != "rice"
+    rice_so = File.join(ROOT, "ruby-qt6-main", "rice", "lib", "qt6", "rice", "rice.so")
+    args << "LOCAL_LIBS=#{rice_so}"
+  end
+  args
+end
+
+GEMS.each do |gem_name|
+  gem_dir = File.join(ROOT, "ruby-qt6-main", gem_name)
+  ext_dir = File.join(gem_dir, "ext", "qt6", gem_name)
+  target_dir = File.join(gem_dir, LIB_TARGETS.fetch(gem_name))
+  FileUtils.rm_f(File.join(ext_dir, "Makefile"))
+  FileUtils.rm_f(Dir.glob(File.join(ext_dir, "*.{o,so}")))
+  run("bundle", "exec", "ruby", "extconf.rb", chdir: ext_dir)
+  run("make", "-j#{Etc.nprocessors}", *make_args(gem_name), chdir: ext_dir)
+  FileUtils.mkdir_p(target_dir)
+  Dir.glob(File.join(ext_dir, "*.so")).each do |shared_object|
+    FileUtils.cp(shared_object, target_dir)
+    puts "installed #{File.basename(shared_object)} -> #{target_dir}"
+  end
+  mark_build_complete(gem_name)
+end
+
+puts "RubyQt6 native extensions are ready."
