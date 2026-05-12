@@ -255,10 +255,8 @@ module Depot
         manifest = selected_manifest
         return warn_dialog("Select an installed app first.") unless manifest
 
-        executable = Sandbox.launch_path(manifest, @settings.load)
-        Process.spawn(executable, pgroup: true)
-      rescue SystemCallError => e
-        warn_dialog("Could not launch app: #{e.message}")
+        result = Launcher.launch(manifest, settings: @settings.load)
+        warn_dialog(result.error) unless result.ok?
       end
 
       def info_selected
