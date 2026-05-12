@@ -73,7 +73,7 @@ bundle install
 ./bin/depot --help
 ```
 
-For GUI:
+For GUI (this make take a while to compile):
 ```bash
 git clone https://github.com/netizensnoopy/depot.git
 cd depot
